@@ -1,0 +1,192 @@
+=====
+Tests
+=====
+
+    >>> from zope import interface, component
+    >>> from zope.interface.verify import verifyObject
+    >>> from zope.testbrowser.testing import Browser
+    >>> from zope.app.component.hooks import setSite
+    >>> from zope.app.folder.folder import Folder
+    >>> from zope.app.security.interfaces import IAuthentication
+    >>> from zope.security.management import newInteraction, endInteraction
+
+    >>> from zojax.activity.interfaces import IActivity
+    >>> from zojax.activity.interfaces import IActivityAware
+    >>> from zojax.activity.interfaces import IActivityRecord
+    >>> from zojax.activity.interfaces import IActivityRecordEvent
+    >>> from zojax.activity.interfaces import IActivityRecordAddedEvent
+    >>> from zojax.activity.interfaces import IActivityRecordRemovedEvent
+    >>> from zojax.activity.interfaces import IActivityRecordDescription
+    >>> from zojax.activity.tests.comment import CommentActivityRecord
+
+    >>> root = getRootFolder()
+    >>> setSite(root)
+    >>> sm = root.getSiteManager()
+
+    >>> folder = Folder()
+    >>> root['folder'] = folder
+    >>> folder1 = Folder()
+    >>> root['folder']['folder1'] = folder1
+    >>> folder2 = Folder()
+    >>> root['folder']['folder2'] = folder2
+
+    >>> configlet = sm.getUtility(IActivity)
+    >>> verifyObject(IActivity, configlet)
+    True
+
+    >>> class Participation:
+    ...     interaction = None
+    ...     def __init__(self, principal):
+    ...         self.principal = principal
+
+    >>> auth = sm.getUtility(IAuthentication)
+
+    >>> endInteraction()
+    >>> newInteraction(Participation(auth.getPrincipal('zope.mgr')))
+
+
+events handler
+
+    >>> events = []
+
+    >>> @component.adapter(IActivityRecordEvent)
+    ... def handleEvents(ev):
+    ...     events.append(ev)
+
+    >>> sm.registerHandler(handleEvents)
+
+add record
+----------
+
+    >>> list(configlet.objectRecords(folder1))
+    []
+
+    >>> record = CommentActivityRecord(principal='zope.mgr', value='test')
+    >>> configlet.add(folder1, record)
+
+    >>> IActivityRecordDescription.providedBy(record.description)
+    True
+
+    >>> record.description.title
+    u'Comment'
+
+    >>> IActivityAware.providedBy(folder1)
+    False
+
+    >>> list(configlet.objectRecords(folder1))
+    []
+
+    >>> interface.classImplements(Folder, IActivityAware)
+
+    >>> configlet.add(folder1, record)
+
+
+we should get event
+
+    >>> event = events[-1]
+
+    >>> event
+    <zojax.activity.configlet.ActivityRecordAddedEvent ...>
+
+    >>> IActivityRecordAddedEvent.providedBy(event)
+    True
+
+    >>> event.object is folder1
+    True
+
+    >>> event.record is record
+    True
+
+    >>> event.record.value
+    'test'
+
+    >>> list(configlet.objectRecords(folder1))
+    [<zojax.activity.tests.comment.CommentActivityRecord ...>]
+
+    >>> configlet.updateObjectRecords(folder1)
+
+
+add record to folder2
+
+    >>> list(configlet.objectRecords(folder2))
+    []
+
+    >>> configlet.add(folder2, CommentActivityRecord())
+
+if principal is not specified, tring to get principal from interaction
+
+    >>> events[-1].record.principal
+    'zope.mgr'
+
+    >>> list(configlet.search(object=folder2))
+    [<zojax.activity.tests.comment.CommentActivityRecord ...>]
+
+
+get records for context
+
+    >>> records = list(configlet.search(contexts=(folder,)))
+
+    >>> records
+    [<zojax.activity.tests.comment.CommentActivityRecord ...>, <zojax.activity.tests.comment.CommentActivityRecord ...>]
+
+    >>> records[0].object is folder2
+    True
+
+    >>> records[1].object is folder1
+    True
+
+    >>> list(configlet.search(sort_order='direct'))
+    [<zojax.activity.tests.comment.CommentActivityRecord ...>, <zojax.activity.tests.comment.CommentActivityRecord ...>]
+
+
+remove record
+-------------
+
+    >>> configlet.remove(records[1].id)
+
+    >>> event = events[-1]
+
+    >>> event
+    <zojax.activity.configlet.ActivityRecordRemovedEvent ...>
+
+    >>> IActivityRecordRemovedEvent.providedBy(event)
+    True
+
+    >>> event.object is folder1
+    True
+
+    >>> event.record.id == records[1].id
+    True
+
+    >>> list(configlet.objectRecords(folder1))
+    []
+
+
+remove object with records
+--------------------------
+
+    >>> del root['folder']['folder2']
+
+    >>> event = events[-1]
+    >>> event.object is folder2
+    True
+    >>> event.record.id == records[0].id
+    True
+
+    >>> list(configlet.search())
+    []
+
+
+descriptions vocabulary
+-----------------------
+
+    >>> from zope.schema.interfaces import IVocabularyFactory
+    >>> voc = sm.getUtility(IVocabularyFactory, 'acitivity.record.descriptions')(root)
+
+    >>> for term in voc:
+    ...     print term.value, term.title
+    comment Comment
+
+    >>> endInteraction()
+    >>> setSite(None)
+    

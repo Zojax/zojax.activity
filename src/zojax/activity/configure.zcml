@@ -1,0 +1,66 @@
+<configure
+   xmlns="http://namespaces.zope.org/zope"
+   xmlns:i18n="http://namespaces.zope.org/i18n"
+   xmlns:zojax="http://namespaces.zope.org/zojax"
+   xmlns:browser="http://namespaces.zope.org/browser"
+   i18n_domain="zojax.activity">
+
+  <!-- configlet -->
+  <zojax:configlet
+     name="system.activity"
+     schema=".interfaces.IActivity"
+     title="Activity"
+     description="Portal activity."
+     class=".configlet.ActivityConfiglet"
+     permission="zojax.Configure">
+    <require
+       permission="zope.View" attributes="add" />
+  </zojax:configlet>
+
+  <subscriber handler=".configlet.objectRemovedHandler" />
+
+  <!-- vocabulary -->
+  <utility
+     name="acitivity.record.descriptions"
+     provides="zope.schema.interfaces.IVocabularyFactory"
+     component=".vocabulary.ActivityRecordDescriptions" />
+
+  <!-- catalog -->
+  <subscriber handler=".catalog.handleCatalogAdded" />
+
+  <adapter
+     name="date"
+     factory=".catalog.DateIndex" />
+
+  <adapter
+     name="type"
+     factory=".catalog.TypeIndex" />
+
+  <adapter
+     name="principal"
+     factory=".catalog.PrincipalIndex" />
+
+  <adapter
+     name="object"
+     factory=".catalog.ObjectIndex" />
+
+  <adapter
+     name="contexts"
+     factory=".catalog.ContextsIndex" />
+
+  <adapter
+     name="allowedUsers"
+     factory=".catalog.AllowedUsersIndex" />
+
+  <!-- translations -->
+  <i18n:registerTranslations directory="locales" />
+
+  <!-- configlet view -->
+  <zojax:pagelet
+     name="index.html"
+     for=".interfaces.IActivity"
+     template="view.pt"
+     class=".view.ActivityView"
+     permission="zojax.Configure" />
+
+</configure>

@@ -1,0 +1,36 @@
+=======
+CHANGES
+=======
+
+0.4.1 (2009-10-06)
+------------------
+
+- Added activity catalog reindex action to configlet
+
+
+0.4.0 (2009-07-15)
+------------------
+
+- Update test for chameleon enabled setup
+
+- Normalized datetime catalog index use
+
+
+0.3.0 (2009-06-21)
+------------------
+
+- Remove 'score' attribute
+
+- Copyright changed to 'Zope Foundation and Contributors'
+
+
+0.2.0 (2009-05-04)
+------------------
+
+- Added index creation factory
+
+
+0.1.0 (2009-04-08)
+------------------
+
+- Initial release.

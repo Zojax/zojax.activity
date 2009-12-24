@@ -1,0 +1,111 @@
+================================
+Activity Configlet browser tests
+================================
+
+    >>> from zope.testbrowser.testing import Browser
+    >>> from zope.app.component.hooks import setSite
+    >>> from zojax.activity.interfaces import IActivity
+    >>> from zojax.activity.tests.comment import CommentActivityRecord
+
+    >>> root = getRootFolder()
+    >>> setSite(root)
+
+    >>> admin = Browser()
+    >>> admin.addHeader("Authorization", "Basic mgr:mgrpw")
+    >>> admin.handleErrors = False
+
+    >>> admin.open('http://localhost/settings/')
+    >>> admin.getLink('Activity').click()
+    >>> print admin.contents
+    <!DOCTYPE...
+    ...There is no any activity...
+    </html>
+
+    >>> configlet = root.getSiteManager().getUtility(IActivity)
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.user'))
+    >>> configlet.add(root, CommentActivityRecord(principal='uknown'))
+
+    >>> admin.reload()
+    >>> print admin.contents
+    <!DOCTYPE...
+    ...
+    <table class="z-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>User</th>
+          <th>Date</th>
+          <th>Object</th>
+        </tr>
+      </thead>
+        <tr class="odd">
+          <td>comment</td>
+          <td>Unknown</td>
+          <td>... second(s) ago...</td>
+          <td><a href="http://localhost/"></a></td>
+        </tr>
+        <tr class="even">
+          <td>comment</td>
+          <td>User</td>
+          <td>... second(s) ago...</td>
+          <td><a href="http://localhost/"></a></td>
+        </tr>
+        <tr class="odd">
+          <td>comment</td>
+          <td>Manager</td>
+          <td>... second(s) ago...</td>
+          <td><a href="http://localhost/"></a></td>
+        </tr>
+    </table>
+    ...
+    </html>
+
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+    >>> configlet.add(root, CommentActivityRecord(principal='zope.mgr'))
+
+paging
+
+    >>> admin.reload()
+    >>> print admin.contents
+    <!DOCTYPE...
+    ...
+    <div class="z-batch-navigation">
+      <a class="z-batch-next"
+         href="http://localhost/settings/system/activity/index.html?bstart=20">
+        Next
+        2 &raquo;
+      </a>
+      [<span>1</span>]
+      <span><a href="http://localhost/settings/system/activity/index.html?bstart=20">2</a></span>
+    </div>
+    ...
+    </html>
+
+reindex
+
+    >>> admin.getControl('Reindex activity catalog').click()
+    >>> print admin.contents
+    <!DOCTYPE html ...
+    ...<div class="statusMessage">Activity catalog has been reindexed.</div>...
+    </html>
+
+    >>> setSite(None)
+    
