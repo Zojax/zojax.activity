@@ -9,10 +9,10 @@
   <table class="z-table" tal:condition="view/batch">
     <thead>
       <tr>
-	<th>Type</th>
-	<th>User</th>
-	<th>Date</th>
-	<th>Object</th>
+	<th i18n:translate="">Type</th>
+	<th i18n:translate="">User</th>
+	<th i18n:translate="">Date</th>
+	<th i18n:translate="">Object</th>
       </tr>
     </thead>
     <tal:block tal:repeat="record view/batch">
@@ -30,7 +30,7 @@
   <div class="z-form-controls" tal:condition="view/batch">
     <hr />
     <form action="index.html" method="post">
-      <input type="submit" class="z-form-standalonebtn" 
+      <input type="submit" class="z-form-standalonebtn" i18n:attributes="value"
 	     name="form.button.reindex" value="Reindex activity catalog" />
     </form>
   </div>
