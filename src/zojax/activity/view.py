@@ -15,11 +15,13 @@
 
 $Id$
 """
-from zope.component import getUtility
-from zope.proxy import removeAllProxies
-from zope.traversing.browser import absoluteURL
 from zope.app.component.hooks import getSite
 from zope.app.security.interfaces import IAuthentication, PrincipalLookupError
+from zope.cachedescriptors.property import Lazy
+from zope.component import getUtility
+from zope.proxy import removeAllProxies
+from zope.schema.interfaces import IVocabularyFactory
+from zope.traversing.browser import absoluteURL
 
 from zojax.batching.batch import Batch
 from zojax.formatter.utils import getFormatter
@@ -35,6 +37,7 @@ class ActivityView(object):
     def update(self):
         request = self.request
         context = removeAllProxies(self.context)
+        query = dict(noSecurityChecks=True)
 
         if 'form.button.reindex' in request:
             catalog = context.catalog
@@ -50,25 +53,30 @@ class ActivityView(object):
             IStatusMessage(request).add(
                 _('Activity catalog has been reindexed.'))
 
-        results = context.search(noSecurityChecks=True)
+        if request.get('searchtype', 'all') != 'all':
+            query['type'] = {'any_of': (request['searchtype'],)}
+
+        results = context.search(**query)
 
         self.batch = Batch(results, size=20, context=context, request=request)
 
         self.auth = getUtility(IAuthentication)
-        self.formatter = getFormatter(self.request, 'humanDatetime', 'medium')
+        self.formatter = getFormatter(self.request, 'fancyDatetime', 'medium')
+        self.voc = getUtility(IVocabularyFactory, 'acitivity.record.descriptions')(getSite())
 
     def getInfo(self, record):
         info = {'type': record.type,
                 'date': self.formatter.format(record.date),
                 'object': self.unknown,
                 'objectUrl': None,
-                'principal': self.unknown}
+                'principal': self.unknown,
+                'before': None}
 
         object = record.object
         if object is not None:
             info['object'] = getattr(object, 'title', object.__name__)
             try:
-                info['objectUrl'] = u'%s/'%absoluteURL(object, self.request)
+                info['objectUrl'] = u'%s/' % absoluteURL(object, self.request)
             except:
                 pass
 
@@ -78,5 +86,9 @@ class ActivityView(object):
                 info['principal'] = principal.title
             except PrincipalLookupError:
                 pass
+
+        if record.type is 'removed':
+            info['before'] = "<s>%s</s> <i>from</i> " % \
+                getattr(record, 'objectTitle', '')
 
         return info

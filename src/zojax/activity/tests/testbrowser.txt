@@ -30,34 +30,51 @@ Activity Configlet browser tests
     >>> print admin.contents
     <!DOCTYPE...
     ...
-    <table class="z-table">
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>User</th>
-          <th>Date</th>
-          <th>Object</th>
-        </tr>
-      </thead>
-        <tr class="odd">
-          <td>comment</td>
-          <td>Unknown</td>
-          <td>... second(s) ago...</td>
-          <td><a href="http://localhost/"></a></td>
-        </tr>
-        <tr class="even">
-          <td>comment</td>
-          <td>User</td>
-          <td>... second(s) ago...</td>
-          <td><a href="http://localhost/"></a></td>
-        </tr>
-        <tr class="odd">
-          <td>comment</td>
-          <td>Manager</td>
-          <td>... second(s) ago...</td>
-          <td><a href="http://localhost/"></a></td>
-        </tr>
-    </table>
+      <h1 ...>Activity</h1>
+      <div ...>Portal activity.</div>
+      <form name="filterActivity" id="filterActivity" action="http://localhost/settings/system/activity/index.html">
+          <h2>Filter by Activity type:</h2>
+          <select id="searchtype" name="searchtype">
+              <option value="all" selected="True">All Types</option>
+                  <option value="comment">Comment</option>
+                  <option value="created">Created</option>
+                  <option value="member.joined">Member</option>
+                  <option value="modified">Modified</option>
+                  <option value="removed">Removed</option>
+          </select>
+          <input type="submit" class="z-form-standalonebtn" name="form.button.filter" value="Filter" />
+    ...
+      <table class="z-table">
+        <thead>
+          <tr>
+        <th>Date</th>
+        <th>User</th>
+        <th>Action</th>
+        <th>Object</th>
+          </tr>
+        </thead>
+          <tr class="odd">
+        <td><span class="zojax-formatter-fancydatetime" ... format="medium">...</span></td>
+        <td>Unknown</td>
+        <td>comment</td>
+        <td>
+            <a href="http://localhost/"></a></td>
+          </tr>
+          <tr class="even">
+        <td><span class="zojax-formatter-fancydatetime" ... format="medium">...</span></td>
+        <td>User</td>
+        <td>comment</td>
+        <td>
+            <a href="http://localhost/"></a></td>
+          </tr>
+          <tr class="odd">
+        <td><span class="zojax-formatter-fancydatetime" ... format="medium">...</span></td>
+        <td>Manager</td>
+        <td>comment</td>
+        <td>
+            <a href="http://localhost/"></a></td>
+          </tr>
+      </table>
     ...
     </html>
 
@@ -108,4 +125,3 @@ reindex
     </html>
 
     >>> setSite(None)
-    

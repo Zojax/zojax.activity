@@ -186,7 +186,10 @@ descriptions vocabulary
     >>> for term in voc:
     ...     print term.value, term.title
     comment Comment
+    created Created
+    member.joined Member
+    modified Modified
+    removed Removed
 
     >>> endInteraction()
     >>> setSite(None)
-    

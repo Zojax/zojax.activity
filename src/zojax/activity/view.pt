@@ -3,26 +3,60 @@
       tal:content="context/__title__"></h1>
   <div class="z-page-description"
        tal:content="context/__description__"></div>
-  
+
+  <form name="filterActivity" id="filterActivity"
+        tal:attributes="action request/URL"
+        tal:define="searchtype python:request.get('searchtype', 'all');">
+
+      <h2>Filter by Activity type:</h2>
+
+      <select id="searchtype" name="searchtype">
+          <option value="all"
+                  tal:attributes="selected python:searchtype == 'all' and True or False">All Types</option>
+          <tal:block condition="view/voc" repeat="action view/voc">
+              <option tal:content="action/title" value=""
+                      tal:attributes="value action/value;
+                                      selected python:(searchtype == action.value) and True or False;"></option>
+          </tal:block>
+      </select>
+
+<tal:comment replace="nothing">
+      <input type="radio" id="searchtype-0" name="searchtype"
+             title="All Types" checked="True" value="all"
+             tal:attributes="checked python:searchtype == 'all' and 'checked' or None" />
+             All Types <br />
+        <tal:block repeat="action view/voc">
+          <input type="radio" id="searchtype-" name="searchtype-"
+                 tal:attributes="title action/title;
+                                 value action/value;
+                                 checked python:(searchtype == action.value) and 'checked' or None;" />
+              <label for="searchtype-" tal:content="python:action.title" /><br />
+        </tal:block>
+</tal:comment>
+      <input type="submit" class="z-form-standalonebtn"
+             name="form.button.filter" value="Filter" />
+  </form>
+
   <tal:block content="structure view/batch/@@pagelet/batch.view" />
 
   <table class="z-table" tal:condition="view/batch">
     <thead>
       <tr>
-	<th i18n:translate="">Type</th>
-	<th i18n:translate="">User</th>
-	<th i18n:translate="">Date</th>
+    <th i18n:translate="">Date</th>
+    <th i18n:translate="">User</th>
+	<th i18n:translate="">Action</th>
 	<th i18n:translate="">Object</th>
       </tr>
     </thead>
     <tal:block tal:repeat="record view/batch">
       <tr tal:define="info python:view.getInfo(record)"
 	  tal:attributes="class python:repeat['record'].odd() and 'even' or 'odd'">
+    <td tal:content="structure info/date"></td>
+    <td tal:content="info/principal"></td>
 	<td tal:content="info/type"></td>
-	<td tal:content="info/principal"></td>
-	<td tal:content="structure info/date"></td>
-	<td><a tal:content="info/object" tal:omit-tag="not:info/objectUrl"
-	       tal:attributes="href info/objectUrl"></a></td>
+	<td><span tal:condition="info/before" tal:content="structure info/before" />
+        <a tal:content="info/object" tal:omit-tag="not:info/objectUrl"
+	        tal:attributes="href info/objectUrl"></a></td>
       </tr>
     </tal:block>
   </table>
